@@ -1,0 +1,13 @@
+
+/** RATINGS **/
+.font-size i { font-size:29px !important; }
+
+.click-callback .star-icon {
+	font-size: 35px;
+	color: #FF5722;
+}
+
+.click-callback .star-icon .ion-android-star:before {
+    content: "\f2fc";
+	color: #FF5722;
+}
