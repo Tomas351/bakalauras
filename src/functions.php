@@ -115,12 +115,14 @@ function filter_offer()
         $filter_o_1 = str_replace(' ', '', escape($_POST['filter_o_1']));
         $filter_o_2 = escape($_POST['filter_o_2']);
         $filter_o_3 = escape($_POST['filter_o_3']);
-        // $page = escape($_POST['page']);
+        $filter_o_4 = escape($_POST['filter_o_4']);
+        $filter_o_5 = escape($_POST['filter_o_5']);
 
-        $url_to_redirect = '?' . 'filter_o_1' . '=' . $filter_o_1 . '&filter_o_2' . '=' . $filter_o_2 . '&filter_o_3' . '=' . $filter_o_3;
+        $url_to_redirect = '?' . 'filter_o_1' . '=' . $filter_o_1 . '&filter_o_2' . '=' . $filter_o_2 . '&filter_o_3' . '=' . $filter_o_3 . '&filter_o_4' . '=' . $filter_o_4. '&filter_o_5' . '=' . $filter_o_5;
         Redirect_to($url_to_redirect);
     }
 }
+
 
 // add_details
 
@@ -298,10 +300,16 @@ function add_stamp()
 {
     if (isset($_POST['add_stamp'])) {
 
+        $year = (int)escape($_POST['year']);
         $con = escape($_POST['con']);
         $des = escape($_POST['des']);
         $user_id  = $_SESSION['u_id'];
+        $condition = escape($_POST['yes_no']);
 
+        if($year < 1840 || $year > 2020)
+        {
+            $errors[] = 'Metai gali būti tik nuo 1840 iki 2020!';
+        }
         // For stamp  image
 
         $image_name = $_FILES['post_image']['name'];
@@ -322,7 +330,13 @@ function add_stamp()
             if (!in_array($image_actual_ext, $allowed_files)) {
                 $errors[] = 'Galima kelti tik jpg ir png failus!';
             } else {
-                $image_new_name = uniqid('', true) . '.' . $image_actual_ext;
+                if($image_size > 1000000)
+                {
+                    $errors[] = 'Failo dydis negali būti didesnis nei 1 MB !';
+                }
+                else{
+                    $image_new_name = uniqid('', true) . '.' . $image_actual_ext;
+                }
             }
         }
 
@@ -331,7 +345,7 @@ function add_stamp()
                 echo validation_errors($error);
             }
         } else {
-            $sql = " INSERT INTO post_stamps(s_img,s_con,s_des,u_id) VALUES('$image_new_name','$con','$des','$user_id') ";
+            $sql = " INSERT INTO post_stamps(s_img,s_con,s_des,u_id,year,mint) VALUES('$image_new_name','$con','$des','$user_id','$year','$condition') ";
             $execute = query($sql);
             confirm($execute);
             if ($execute) {
@@ -357,7 +371,13 @@ function update_stamp()
         $con = str_replace(' ', '', strtolower(escape($_POST['con'])));
         $des = escape($_POST['des']);
         $user_id  = $_SESSION['u_id'];
+        $year = (int)escape($_POST['year']);
+        $condition = escape($_POST['yes_no']);
 
+        if($year < 1840 || $year > 2020)
+        {
+            $errors[] = 'Metai gali būti tik nuo 1840 iki 2020!';
+        }
         $image_name = $_FILES['post_image']['name'];
         $image_tmp_name = $_FILES['post_image']['tmp_name'];
         $image_size = $_FILES['post_image']['size'];
@@ -391,7 +411,7 @@ function update_stamp()
                 echo validation_errors($error);
             }
         } else {
-            $query = "UPDATE post_stamps SET s_img = '$image_new_name', s_con = '$con', s_des = '$des'  WHERE s_id = '$edit_stamp_id'  ";
+            $query = "UPDATE post_stamps SET s_img = '$image_new_name', s_con = '$con', s_des = '$des', mint = '$condition', year = '$year'  WHERE s_id = '$edit_stamp_id'  ";
 
             $execute = query($query);
             confirm($execute);
@@ -477,6 +497,42 @@ function offer_delete()
         confirm($execute);
         if ($execute) {
             $_SESSION['success'] = 'Skelbimas ištrintas sėkmingai';
+            Redirect_to('myprofile.php');
+        }
+    }
+}
+
+function send_offer()
+{
+
+    if (isset($_POST['send-offer'])) {
+
+        $offerID = escape($_POST['offer_id']);
+        $user_id = $_SESSION['u_id'];
+        if (isset($_POST['image'])) {
+            $img_ids = $_POST['image'];
+            foreach ($img_ids as $img_id) {
+                $sql_ids = "INSERT INTO sent_offers(p_id, u_id, o_id) VALUES('$img_id','$user_id','$offerID') ";
+                $execute_ids = query($sql_ids);
+                confirm($execute_ids);
+            }
+        }
+        $_SESSION['success'] = 'Pasiūlymas sėkmingai išsiųstas';
+        Redirect_to('index.php');
+    }
+}
+
+function sent_offer_delete()
+{
+    if (isset($_GET['sent_offer_delete'])) {
+        $delete_id = $_GET['sent_offer_delete'];
+
+        $sql = " DELETE FROM sent_offers WHERE so_id = '$delete_id' ";
+        echo $sql;
+        $execute = query($sql);
+        confirm($execute);
+        if ($execute) {
+            $_SESSION['success'] = 'Pasiūlymas atmestas sėkmingai';
             Redirect_to('myprofile.php');
         }
     }

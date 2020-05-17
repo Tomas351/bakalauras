@@ -45,5 +45,9 @@ function row_count($result)
 function fetch_array($result)
 {
     global $con;
+    if (!$result) {
+        printf("Error: %s\n", mysqli_error($con));
+        exit();
+    }
     return mysqli_fetch_array($result);
 }

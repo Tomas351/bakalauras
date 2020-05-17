@@ -46,21 +46,35 @@
 						?>
 
 					</div>
+
 					<div class="form-group input-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"> <i class="fa fa-lock"></i> </span>
 						</div>
-						<input class="form-control" placeholder="Ką siūlai" name="filter_o_2" type="text">
+						<input class="form-control" placeholder="Ko ieškai" name="filter_o_2" type="text">
 					</div>
 					<div class="form-group input-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"> <i class="fa fa-lock"></i> </span>
 						</div>
-						<input class="form-control" name="filter_o_3" placeholder="Kokių pašto ženklų ieškai" type="text">
+						<input class="form-control" name="filter_o_3" placeholder="Ką siūlai" type="text">
 					</div>
+                    <select name="filter_o_4" class="form-control">
+                        <option value="">Ar nepanaudotas</option>
+                        <option value="1">Taip</option>
+                        <option value="0">Ne</option>
+                    </select>
+                    <select name="filter_o_5" class="form-control">
+                        <option value="">Pašto ženklo metai</option>
+                        <option value="1840-1900">1840-1900</option>
+                        <option value="1901-1950">1901-1950</option>
+                        <option value="1951-2000">1951-2000</option>
+                        <option value="2001-2020">2001-2020</option>
+                    </select>
 					<div class="form-group">
-						<button type="submit" value="" name="search_filter2" class="btn btn-primary btn-block"> Filtruoti </button>
+						<button type="submit" value="" name="search_filter" class="btn btn-primary btn-block"> Filtruoti </button>
 					</div>
+
 				</form>
 			</div><!-- /.col-lg-12 END -->
 
@@ -70,6 +84,8 @@
 			$filter_o_1 = "";
 			$filter_o_2 = "";
 			$filter_o_3 = "";
+            $filter_o_4 = "";
+            $filter_o_5 = "";
 			$sql_of = '';
 			$filter = false;
 			if (isset($_GET['filter_o_1'])) {
@@ -83,16 +99,48 @@
 				$filter_o_2 = $_GET['filter_o_2'];
 				if (!empty($filter_o_2)) {
 					$filter = true;
-					$sql_of = "SELECT * FROM  offers INNER JOIN stamp_offer ON stamp_offer.offer_id = offers.o_id INNER JOIN post_stamps ON stamp_offer.stamp_id = post_stamps.s_id INNER JOIN countries ON `countries`.`c_id` = post_stamps.s_conn WHERE s_sum = '$filter_o_2'";
+                    if(!empty($sql_of)){
+                        $sql_of = $sql_of.' '."AND o_sum LIKE '%$filter_o_2%'";
+                    } else {
+                        $sql_of = "SELECT * FROM  offers INNER JOIN stamp_offer ON stamp_offer.offer_id = offers.o_id INNER JOIN post_stamps ON stamp_offer.stamp_id = post_stamps.s_id INNER JOIN countries ON `countries`.`c_id` = post_stamps.s_con WHERE o_sum LIKE '%$filter_o_2%'";
+                    }
 				}
 			}
 			if (isset($_GET['filter_o_3'])) {
 				$filter_o_3 = $_GET['filter_o_3'];
 				if (!empty($filter_o_3)) {
 					$filter = true;
-					$sql_of = "SELECT * FROM  offers INNER JOIN stamp_offer ON stamp_offer.offer_id = offers.o_id INNER JOIN post_stamps ON stamp_offer.stamp_id = post_stamps.s_id INNER JOIN countries ON `countries`.`c_id` = post_stamps.s_conn WHERE o_want = '$filter_o_3'";
+                    if(!empty($sql_of)){
+                        $sql_of = $sql_of.' '."AND o_want LIKE '%$filter_o_3%'";
+                    } else {
+                        $sql_of = "SELECT * FROM  offers INNER JOIN stamp_offer ON stamp_offer.offer_id = offers.o_id INNER JOIN post_stamps ON stamp_offer.stamp_id = post_stamps.s_id INNER JOIN countries ON `countries`.`c_id` = post_stamps.s_con WHERE o_want LIKE '%$filter_o_3%'";
+                    }
 				}
 			}
+            if (isset($_GET['filter_o_4'])) {
+                $filter_o_4 = $_GET['filter_o_4'];
+                if (!empty($filter_o_4)) {
+                    $filter = true;
+                    if(!empty($sql_of)){
+                        $sql_of = $sql_of.' '."AND post_stamps.mint = '$filter_o_4'";
+                    } else{
+                        $sql_of = "SELECT * FROM  offers INNER JOIN stamp_offer ON stamp_offer.offer_id = offers.o_id INNER JOIN post_stamps ON stamp_offer.stamp_id = post_stamps.s_id INNER JOIN countries ON `countries`.`c_id` = post_stamps.s_con WHERE post_stamps.mint = '$filter_o_4'";
+                    }
+                }
+            }
+            if (isset($_GET['filter_o_5'])) {
+                $filter_o_5 = $_GET['filter_o_5'];
+                if (!empty($filter_o_5)) {
+                    $filter = true;
+                    if(!empty($sql_of)){
+                        $datos = explode("-",$filter_o_5);
+                        $sql_of = $sql_of.' '."AND post_stamps.year > '$datos[0]' AND post_stamps.year < '$datos[1]'";
+                    } else{
+                        $datos = explode("-",$filter_o_5);
+                        $sql_of = "SELECT * FROM  offers INNER JOIN stamp_offer ON stamp_offer.offer_id = offers.o_id INNER JOIN post_stamps ON stamp_offer.stamp_id = post_stamps.s_id INNER JOIN countries ON `countries`.`c_id` = post_stamps.s_con WHERE post_stamps.year > '$datos[0]' AND post_stamps.year < '$datos[1]'";
+                    }
+                }
+            }
 			// if (!$_GET['filter_o_3'] and !$_GET['filter_o_3']) {
 			// }
 
@@ -119,14 +167,15 @@
 				<div class="col-lg-4 col-md-6">
 					<div class="card h-100">
 						<div class="single-post post-style-1">
+
 							<div class="blog-image"><img src="assets/images/stamps/<?php echo $post_stamp_img; ?>" alt="Blog Image"></div>
 							<!-- <a class="avatar" href=""> -->
 							<img class="avatar" src="assets/images/avatar.jpg" alt="Profile Image">
 							<!-- </a> -->
 							<div class="text-left p-3">
-								<h4 class="text-center text-primary"><b><?php echo $offer_title; ?></b></h4>
+                                <h4 class="text-center text-primary"><a href="offer-detail.php?id=<?php echo $id; ?>"><b><?php echo $offer_title; ?></b></a></h4>
 								<div><b>Siūlo</b> <?php echo $offer_sum; ?></div>
-								<div><b>Nori</b> <?php echo $offer_want; ?></div>
+								<div ><b >Nori</b> <?php echo $offer_want; ?></div>
 							</div>
 
 							<ul class="post-footer">

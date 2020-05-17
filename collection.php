@@ -80,6 +80,8 @@
                           </label>
                           <input type='file' class="form-control mb-0" name="post_image" id="file-input" />
                         </div>
+                          <div class="alert alert-success">
+                              Galima kelti tik .jpg ir .png failus, nedidesnius nei 1MB.                          </div>
                       </div><!-- col-sm-6 -->
                       <div class="col-sm-12 mt-3">
                         <select name="con" id="" class="form-control">
@@ -96,6 +98,18 @@
 
                         </select>
                       </div><!-- col-sm-6 -->
+
+                        <div class="col-sm-12">
+                            <label>Ar pašto ženklo nepanaudotas?</label>
+                            <p>
+                                <input type="radio" name="yes_no" checked value="1">Taip</input>
+                                <input type="radio" name="yes_no" value="0">Ne</input>
+                            </p>
+                        </div>
+
+                        <div class="col-sm-12">
+                            <textarea name="year" rows="1" class="text-area-messge form-control" placeholder="Įveskite pašto ženklo metus (Nuo 1840 iki 2020)" aria-required="true" aria-invalid="false"></textarea>
+                        </div>
 
                       <div class="col-sm-12">
                         <textarea name="des" rows="2" class="text-area-messge form-control" placeholder="Įrašyk aprašymą" aria-required="true" aria-invalid="false"></textarea>
@@ -185,7 +199,6 @@
 <script src="assets/common-js/tether.min.js"></script>
 
 <script src="assets/common-js/bootstrap.js"></script>
-
 
 <script src="assets/common-js/scripts.js"></script>
 

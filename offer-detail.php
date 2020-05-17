@@ -1,14 +1,12 @@
 <?php require_once  'includes/front_header.php'  ?>
 <?php confirm_login_v(); ?>
-
+<?php sent_offer_delete(); ?>
 
 <?php
-$offer_ID = "";
 if (isset($_GET['id'])) {
 	$offer_ID = $_GET['id'];
 }
 $sql_of = "SELECT * FROM  offers INNER JOIN stamp_offer ON stamp_offer.offer_id = offers.o_id INNER JOIN post_stamps ON stamp_offer.stamp_id = post_stamps.s_id INNER JOIN tbl_users ON tbl_users.user_id = offers.user_id WHERE post_stamps.s_id = '" . $offer_ID . "'";
-
 $result_of = query($sql_of);
 while ($row_of = fetch_array($result_of)) {
 	$id = $row_of['s_id'];
@@ -21,6 +19,8 @@ while ($row_of = fetch_array($result_of)) {
 	$offer_want = $row_of['o_want'];
 	$offer_sum = $row_of['o_sum'];
 	$offer_date = $row_of['created_at'];
+	$condition = $row_of['mint'];
+	$year = $row_of['year'];
 }
 ?>
 <section class="post-area">
@@ -55,6 +55,8 @@ while ($row_of = fetch_array($result_of)) {
 						<ul id="gallery" class="d-flex justify-content-center flex-wrap pure-js-lightbox-container">
 							<li class="p-2 border shadow" style="width: 200px;">
 								<a href="./assets/images/stamps/<?php echo $post_stamp_img; ?>"><img class="img-fluid" src="./assets/images/stamps/<?php echo $post_stamp_img; ?>" /></a>
+                                <h4><b>Metai: <?php echo $year; ?></b></h4>
+                                <h4><b>Būklė: <?php if($condition=1) echo "Nepanaudotas";if($condition=0) echo "Panaudotas"; ?></b></h4>
 							</li>
 						</ul>
 
@@ -74,7 +76,7 @@ while ($row_of = fetch_array($result_of)) {
 									<?php if ($user_id_of_creator == $_SESSION['u_id']) { ?>
 										<button class="mt-4 w-50 btn btn-primary disabled">Pasiūlyti</button>
 									<?php } else { ?>
-										<a href="chat.php?chat_with=<?php echo $user_id_of_creator; ?>" class="mt-4 w-50 btn btn-primary">Pasiūlyti</a>
+										<a href="offer.php?id=<?php echo $offer_ID; ?>" class="mt-4 w-50 btn btn-primary">Pasiūlyti</a>
 									<?php } ?>
 								</div><!-- /.text-center END -->
 							</div>
@@ -88,17 +90,65 @@ while ($row_of = fetch_array($result_of)) {
 </section><!-- post-area -->
 
 <section class="comment-section center-text mt-5">
-	<div class="container">
-		<h4><b>Palikti atsiliepimą</b></h4>
-		<div class="row">
+        <?php if ($user_id_of_creator == $_SESSION['u_id']) { ?>
+            <div class="middle-area">
+                <h3 class=""><a href="#"><b>Pasiūlymų sąrašas</b></a></h3>
+            </div>
 
-			<div class="col-lg-8 offset-lg-2 col-md-12">
-				<div class="text-center">
-					<?php if ($user_id_of_creator == $_SESSION['u_id']) { ?>
-						<div class="alert alert-danger mt-3">
-							Negalima palikti sau atsiliepimo
-						</div><!-- /.alert alert-danger END -->
-					<?php } else { ?>
+                <?php
+                $u_id = $_SESSION['u_id'];
+
+                $sql = "SELECT * FROM  sent_offers INNER JOIN post_stamps ON sent_offers.p_id = post_stamps.s_id WHERE sent_offers.o_id = $offer_id";
+                $result = query($sql);
+                if (mysqli_num_rows($result) == 0) { ?>
+                    <div class="alert alert-danger alert-dismissible fade show ">
+                        Šis skelbimas neturi jokių pasiūlymų.
+                    </div>
+<?php } else {
+
+                while ($row = fetch_array($result)) {
+                $offered_post_stamp_img = $row['s_img'];
+                $offered_user_id = $row['u_id'];
+                $offered_id = $row['so_id'];
+                $condition = $row['mint'];
+                $year = $row['year'];
+                $desc = $row['s_des']
+                ?>
+                    <div class="container">
+                        <div class="row justify-content-center">
+
+                    <div class="col-lg-4 col-md-6">
+                    <div class="card h-100">
+                        <div class="single-post post-style-1">
+
+                            <ul id="gallery" class="d-flex justify-content-center flex-wrap pure-js-lightbox-container">
+                                <li class="p-2 border shadow" style="width: 200px;">
+                                    <a href="./assets/images/stamps/<?php echo $offered_post_stamp_img; ?>"><img class="img-fluid" src="./assets/images/stamps/<?php echo $offered_post_stamp_img; ?>" /></a>
+                                    <h4><b>Metai: <?php echo $year; ?></b></h4>
+                                    <h4><b>Būklė: <?php if($condition=1) echo "Nepanaudotas";if($cond=0) echo "Panaudotas"; ?></b></h4>
+                                    <h4><b>Aprašymas: <?php echo $desc; ?></b></h4>
+                                    <a href="chat.php?chat_with=<?php echo $offered_user_id; ?>" class="text-success">
+                                        <h4><i class="ion-android-mail"></i>Priimti</h4></a>
+                                    <a onclick="return confirm('Ar esi tikras, kad nori atmesti šį pasiūlymą?')" href="offer-detail.php?sent_offer_delete=<?php echo $offered_id; ?>" class="text-danger">
+                                        <h4><i class="ion-android-delete"></i>Atmesti</h4></a>
+</li>
+                            </ul>
+
+                            <!-- single-post -->
+                        </div>
+                        </div><!-- card -->
+                    </div><!-- col-lg-4 col-md-6 -->
+                    </div><!-- row -->
+
+                    </div><!-- container -->
+                    <?php } ?>
+
+					<?php } } else { ?>
+        <h4><b>Palikti atsiliepimą</b></h4>
+        <div class="row">
+
+            <div class="col-lg-8 offset-lg-2 col-md-12">
+                <div class="text-center">
 						<div class="comment-form">
 							<form method="post">
 								<div class="row">
@@ -125,59 +175,57 @@ while ($row_of = fetch_array($result_of)) {
 								</div><!-- row -->
 							</form>
 						</div><!-- FEEDBACK-form -->
+                </div><!-- /.text-center END -->
+
+
+                <h4><b>Atsiliepimai</b></h4>
+                <?php
+                $avg_stars = 0;
+                $offer_ID = "";
+                if (isset($_GET['id'])) {
+                    $offer_ID = $_GET['id'];
+                }
+                $sql_of = "SELECT * FROM  feedback INNER JOIN tbl_users ON tbl_users.user_id = feedback.u_id";
+                $result_of = query($sql_of);
+                $total_feedbacks = row_count($result_of);
+                ?>
+
+                <?php
+                $avg_stars = 0;
+                $total_stars = 0;
+                $feedback_html = '';
+                $feedback_card_html = '';
+                while ($row_of = fetch_array($result_of)) {
+                    $f_id = $row_of['f_id'];
+                    $u_name = $row_of['u_name'];
+                    $feedback = $row_of['feedback'];
+                    $o_id = $row_of['o_id'];
+                    $u_id = $row_of['u_id'];
+                    $stars = $row_of['stars'];
+                    $given_at = $row_of['given_at'];
+                    $date2 = date_create($given_at);
+                    $specialClass = '';
+                    if ($u_id == $_SESSION['u_id']) {
+                        $specialClass = "alert-primary";
+                    }
+
+                    $total_stars = $total_stars + $stars;
+                    $feedback_html .= "<div class='commnets-area text-left " . $specialClass . "'> <div class='comment'> <div class='post-info'> <div class='left-area'> <a class='avatar'><img src='assets/images/avatar.jpg' alt='Profile Image'></a> </div> <div class='middle-area'> <a class='name'><b> " . $u_name . " </b> </a> <h6 class='date'> " . date_format($date2, ' M d, Y -- H:i A') . " </h6> </div> <div class='rating_area'> <img class='rating' src='./assets/images/ratings/ " . $stars . " star.png' alt=''> </div> </div><!-- post-info --> <p> " . $feedback . " </p> </div> </div>";
+                }
+
+                if($total_feedbacks!=0){
+                    $avg_stars = $total_stars / $total_feedbacks;
+                    $avg_stars = intval($avg_stars);
+
+
+                }
+                echo $feedback_card_html = "<div class='card border p-4'> <div class='card-body'> <div class='d-flex justify-content-between'> <div class=''> <h6 class=''>Išviso atsiliepimų: <b> " . $total_feedbacks . " </b></h6> </div> <div class=''> <h6 class=''>Vidutinis reitingas: <img class='rating' height='16' width='auto' src='./assets/images/ratings/" . $avg_stars . "star.png' alt=''></h6> </div> </div> </div> </div>";
+                echo $feedback_html;
+                ?>
+                <!-- <a class="more-comment-btn" href="#"><b>VIEW MORE FEEDBACK</a> -->
+            </div><!-- col-lg-8 col-md-12 -->
+        </div><!-- row -->
 					<?php } ?>
-				</div><!-- /.text-center END -->
-
-
-				<h4><b>Atsiliepimai</b></h4>
-				<?php
-				$avg_stars = 0;
-				$offer_ID = "";
-				if (isset($_GET['id'])) {
-					$offer_ID = $_GET['id'];
-				}
-				$sql_of = "SELECT * FROM  feedback INNER JOIN tbl_users ON tbl_users.user_id = feedback.u_id";
-				$result_of = query($sql_of);
-				$total_feedbacks = row_count($result_of);
-				?>
-
-				<?php
-				$avg_stars = 0;
-				$total_stars = 0;
-				$feedback_html = '';
-				$feedback_card_html = '';
-				while ($row_of = fetch_array($result_of)) {
-					$f_id = $row_of['f_id'];
-					$u_name = $row_of['u_name'];
-					$feedback = $row_of['feedback'];
-					$o_id = $row_of['o_id'];
-					$u_id = $row_of['u_id'];
-					$stars = $row_of['stars'];
-					$given_at = $row_of['given_at'];
-					$date2 = date_create($given_at);
-					$specialClass = '';
-					if ($u_id == $_SESSION['u_id']) {
-						$specialClass = "alert-primary";
-					}
-
-					$total_stars = $total_stars + $stars;
-					$feedback_html .= "<div class='commnets-area text-left " . $specialClass . "'> <div class='comment'> <div class='post-info'> <div class='left-area'> <a class='avatar'><img src='assets/images/avatar.jpg' alt='Profile Image'></a> </div> <div class='middle-area'> <a class='name'><b> " . $u_name . " </b> </a> <h6 class='date'> " . date_format($date2, ' M d, Y -- H:i A') . " </h6> </div> <div class='rating_area'> <img class='rating' src='./assets/images/ratings/ " . $stars . " star.png' alt=''> </div> </div><!-- post-info --> <p> " . $feedback . " </p> </div> </div>";
-				}
-				
-				if($total_feedbacks!=0){
-					$avg_stars = $total_stars / $total_feedbacks;
-					$avg_stars = intval($avg_stars);
-
-
-				}
-				echo $feedback_card_html = "<div class='card border p-4'> <div class='card-body'> <div class='d-flex justify-content-between'> <div class=''> <h6 class=''>Išviso atsiliepimų: <b> " . $total_feedbacks . " </b></h6> </div> <div class=''> <h6 class=''>Vidutinis reitingas: <img class='rating' height='16' width='auto' src='./assets/images/ratings/" . $avg_stars . "star.png' alt=''></h6> </div> </div> </div> </div>";
-				echo $feedback_html;
-				?>
-				<!-- <a class="more-comment-btn" href="#"><b>VIEW MORE FEEDBACK</a> -->
-			</div><!-- col-lg-8 col-md-12 -->
-		</div><!-- row -->
-
-	</div><!-- container -->
 </section>
 
 
@@ -295,6 +343,71 @@ while ($row_of = fetch_array($result_of)) {
 
 		}
 	}
+</script>
+
+<style>
+    .nopad {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /*image gallery*/
+    .image-checkbox {
+        cursor: pointer;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        border: 4px solid transparent;
+        margin-bottom: 0;
+        outline: 0;
+    }
+
+    .image-checkbox input[type="checkbox"] {
+        display: none;
+    }
+
+    .image-checkbox-checked {
+        border-color: #4783B0;
+    }
+
+    .image-checkbox .check-icon {
+        position: absolute;
+        color: transparent;
+    ;
+        background-color: transparent;
+        padding: 5px;
+        top: 0;
+        right: 0;
+        width: 25px;
+        height: 25px;
+    }
+
+    .image-checkbox-checked .check-icon {
+        display: block !important;
+        background-color: green;
+        color: #fff;
+    }
+</style>
+
+<script>
+    // image gallery
+    // init the state from the input
+    $(".image-checkbox").each(function() {
+        if ($(this).find('input[type="checkbox"]').first().attr("checked")) {
+            $(this).addClass('image-checkbox-checked');
+        } else {
+            $(this).removeClass('image-checkbox-checked');
+        }
+    });
+
+    // sync the state to the input
+    $(".image-checkbox").on("click", function(e) {
+        $(this).toggleClass('image-checkbox-checked');
+        var $checkbox = $(this).find('input[type="checkbox"]');
+        $checkbox.prop("checked", !$checkbox.prop("checked"))
+
+        e.preventDefault();
+    });
 </script>
 
 </body>

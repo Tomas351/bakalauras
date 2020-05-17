@@ -155,8 +155,6 @@
 
                     </div>
 
-
-
                     <div class="col-sm-12 mt-4">
                       <textarea name="title" rows="2" class="text-area-messge form-control" placeholder="Pavadinimas" aria-required="true" aria-invalid="false"></textarea>
                     </div><!-- col-sm-12 -->
@@ -193,53 +191,6 @@
 			<div class="col-lg-12">
 				<h4><b>Mano skelbimai</b></h4>
 
-				<div class="text-left"><small class="">Filtrai:</small></div>
-				<form class="d-flex justify-content-between">
-					<?php successMsg();  ?>
-					<?php
-					filter_offer();
-					?>
-					<div class="form-group input-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"> <i class="fa fa-user"></i> </span>
-						</div>
-						<!-- <input type="hidden" name="page" value="index.php" /> -->
-						<?php
-						$sql_of = "SELECT * FROM  countries";
-						$countries = query($sql_of);
-						if ($countries->num_rows > 0) {
-						?>
-							<select name="filter_o_1" id="" class="form-control">
-								<option value="">Pasirink šalį</option>
-								<?php
-								while ($country = fetch_array($countries)) {
-									$c_id = $country['c_id'];
-									$c_name = $country['c_name'];
-									echo "<option value='" . $c_id . "'>" . $c_name . "</option>";
-								}
-								?>
-							</select>
-						<?php
-						}
-						?>
-
-					</div>
-					<div class="form-group input-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"> <i class="fa fa-lock"></i> </span>
-						</div>
-						<input class="form-control" placeholder="Raktažodis" name="filter_o_2" type="text">
-					</div>
-					<div class="form-group input-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"> <i class="fa fa-lock"></i> </span>
-						</div>
-						<input class="form-control" name="filter_o_3" placeholder="Ką nori gauti" type="text">
-					</div>
-					<div class="form-group">
-						<button type="submit" value="" name="search_filter2" class="btn btn-primary btn-block"> Filtruoti </button>
-					</div>
-				</form>
 			</div><!-- /.col-lg-12 END -->
 
 
@@ -288,6 +239,11 @@
 				$offer_title = $row_of['o_title'];
 				$offer_want = $row_of['o_want'];
 				$offer_sum = $row_of['o_sum'];
+
+                $sql = "SELECT COUNT(*) FROM sent_offers WHERE sent_offers.o_id = $offer_id";
+                $result = query($sql);
+                $row = fetch_array($result);
+                $kiek_offer = $row['COUNT(*)'];
 			?>
 				<?php
 				//  $sql_stm_of = "SELECT * FROM  stamp_offer WHERE offer_id = '$offer_id' ";
@@ -309,7 +265,8 @@
 							</div>
 
 							<ul class="post-footer">
-								<li><a href="#"><i class="ion-android-map"></i> <?php echo $c_name; ?> </a></li>
+								<li><a href="#"><i class="ion-android-alert"></i>Pasiūlymai:
+                                        <?php echo $kiek_offer;?> </a></li>
                 <li><a onclick="return confirm('Ar esi tikras, kad nori ištrinti šį skelbimą?')" href="myprofile.php?delete-offer=<?php echo $offer_id; ?>" class="text-danger"><i class="ion-android-delete"></i>
                         Ištrinti</a></li>
 								<li><a href="offer-detail.php?id=<?php echo $id; ?>"><i class="ion-eye"></i>Aprašymas</a></li>
